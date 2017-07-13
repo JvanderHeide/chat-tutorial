@@ -66,7 +66,7 @@ Let's just make sure your HTML file looks something like this:
 
 Next we make sure that the file gets sent to the visitor by changing our previous `res.send('<h1>Hello world</h1>');` in our **index.js** to `res.sendFile(__dirname + '/index.html');`. The `__dirname` here is a so called *global* supplied by Node.js that supplies us with the directory of the current module that's being run (our chat-tutorial in this case). Further this instructs the server to send a file from that folder named **index.html**.
 
-Next we're going to need to restart our application to have it pickup these changes, you can do so by pressing **`ctrl` + `c`** to end the current process in your terminal. Next w're going to run `node index.js` again.
+Next we're going to need to restart our application to have it pickup these changes, you can do so by pressing `ctrl`+`c` to end the current process in your terminal. Next we're going to run `node index.js` again.
 
 
 
