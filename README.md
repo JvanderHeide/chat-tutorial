@@ -16,7 +16,7 @@ First we're going to install [express](https://expressjs.com/) to make sure expr
 
 Our **package.json** should now contain the following:
 
-``` javascript
+``` json
 "dependencies": {
     "express": "^4.15.3"
 }
