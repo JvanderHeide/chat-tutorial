@@ -7,10 +7,21 @@ app.get('/', function(req, res){
 });
 
 io.on('connection', function(socket){
+
   console.log('a user connected');
+  socket.broadcast.emit('new user', 'A new user has joined the chat');
+
+  socket.on('chat message', function(msg){
+    const msgLength = msg.trim().length;
+    if(msgLength > 0) {
+      io.emit('chat message', msg);
+    }
+  });
+
   socket.on('disconnect', function(){
     console.log('user disconnected');
   });
+
 });
 
 http.listen(3000, function(){
