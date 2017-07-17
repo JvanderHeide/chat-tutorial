@@ -230,7 +230,7 @@ newMessage.setAttribute('data-timestamp', getTimeStamp());
 ```
 ### Some styling
 
-Finally we'll add some styles, I've created some simple styles for you to use, feel free to create your own:
+Finally we'll add some styles, I've created some simple styles for you to use, feel free to create your own, you can place this just above the closing "head" tag:
 ``` css
 <style>
   *, *:before, *:after {
