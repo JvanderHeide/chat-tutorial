@@ -7,7 +7,7 @@ For the back-end we're going to use [Express](https://expressjs.com/) & [Socket.
 
 ## Getting started
 Create a project folder in a place to your liking.
-Open terminal and run `npm init` to initialize NPM and follow the instructions, this will create a **package.json** file, that will contain a little information about our project and it's dependencies.
+Open terminal and run `npm init` to initialize NPM and follow the instructions, this will create a **package.json** file, that will contain a little information about our project and it's dependencies. From now on when we install a dependency by running `npm install` it gets added to the node_modules folder.
 
 ## Setting up a web server
 First we're going to install [express](https://expressjs.com/) to make sure express is installed every time we install our project later on, we're going to use `npm install --save express`, the `--save` flag makes sure our dependencies are saved to our **package.json** file, and will serve as instructions for later installations.
@@ -69,10 +69,50 @@ Let's just make sure your HTML file looks something like this:
 ```
 **💡 Tip: The classes used here a based on the [BEM](http://getbem.com/) methodology, which might help you with writing more reusable and component based CSS.**
 
-Next we make sure that the file gets sent to the visitor by changing our previous `res.send('<h1>Hello world</h1>');` in our **index.js** to `res.sendFile(__dirname + '/index.html');`. The `__dirname` here is a so called *global* supplied by Node.js that supplies us with the directory of the current module that's being run (our chat-tutorial in this case). Further this instructs the server to send a file from that folder named **index.html**.
+Next we make sure that the file gets sent to the visitor by changing our previous
+
+`res.send('<h1>Hello world</h1>');`
+
+in our **index.js**, to
+
+`res.sendFile(__dirname + '/index.html');`
+
+The `__dirname` here is a so called *global* supplied by Node.js that supplies us with the directory of the current module that's being run (our chat-tutorial in this case). Further this instructs the server to send a file from that folder named **index.html**.
 
 Next we're going to need to restart our application to have it pickup these changes, you can do so by pressing `ctrl`+`c` to end the current process in your terminal. Next we're going to run `node index.js` again.
 
+## Live communication
+
+A chat wouldn't be much of a chat if we weren't able to communicate in (close to) realtime, for this we'll be using websockets, to make our lives easier we're going to call upon [socket.io](https://socket.io/) to handle that for us, first we'll install it by running:
+
+`npm install --save socket.io`
+
+Next we'll have to make sure our server knows to use socket.io, add the following to **index.js**:
+``` javascript
+const io = require('socket.io')(http);
+```
+``` javascript
+io.on('connection', function(socket){
+  console.log('a user connected');
+});
+```
+
+Now that the server knows to use sockets, the front-end should too, include the following just above the body tag of our **index.html**:
+``` html
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  var socket = io();
+</script>
+```
+Whilst it might seem to you that '/socket.io/socket.io.js' does not exist, it does. Socket.io injects a link to the file that is located in the socket.io module in our node_modules folder.
+
+Now restart the server and load the page, you'll see `a user has connected` in the terminal every time you open the page. Every socket that's emits events, one of those is "disconnect", lets add it in to the mix and watch what happens when you open and close the page now (after an other restart).
+Add the following code in the correct position:
+``` javascript
+socket.on('disconnect', function(){
+  console.log('user disconnected');
+});
+```
 
 
 
