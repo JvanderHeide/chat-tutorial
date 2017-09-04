@@ -341,14 +341,19 @@ Luckily angular has a CLI (command line interface) which will help us by creatin
 
 ### Setting up
 
-First we're going to install the Angular CLI globally (that means it'll be available from all folders in our terminal after we're done, so it won't be a dependency just for our project).
+First we're going to install the Angular CLI (Command Line Interface) globally (that means it'll be available from all folders in our terminal after we're done, so it won't be a dependency just for our project).
 At the time of writing we need to make sure our node version is at least `6.9.x or higher` and our npm version is at least `3.x.x or higher`.
 
 **💡 Tip: You can check your node version by typing `node -v` in your terminal, the same goes for npm `npm -v`.**
 
 **💡 Tip: If you're on a Mac and you'd like to update your node or npm or need to switch to an older or newer version in case of breaking updates or outdated projects take a look at [nvm](https://github.com/creationix/nvm) (despite the acronym that's not "never mind", it's Node version manager😉).**
 
-Now let's install the Angular CLI by running `npm install -g @angular/cli` in our terminal, the `-g` means that it'll be installed globally so that you can use it from anywhere from then on. Go back to your "chat-tutorial" folder and run `ng new front-end`. This will create a new folder in our "chat-tutorial" folder named "front-end" containing the basic setup of our angular project. Neat!
+Now let's install the Angular CLI by running `npm install -g @angular/cli` in our terminal, the `-g` means that it'll be installed globally so that you can use it from anywhere from then on. Go back to your "chat-tutorial" folder and run `ng new front-end --style scss`. This will create a new folder in our "chat-tutorial" folder named "front-end" containing the basic setup of our angular project using `scss` for CSS. Neat!
+
+Now move to our new folder in the terminal. If you'll now run `ng serve`, and visit the url (localhost:4200) you'll see a little page with some links to angular related content. When you're running `ng serve` it will automatically update the resources you change in the front-end project. As somewhat usual, the builtin server starts serving from `src/index.html` in there you'll see a tag named `app-root`, this refers to the component defined you'll find the `app` folder and the HTML it outputs can be found in the `app/app.component.html` file. For now empty that file.
+
+Next we're going to create a component to view the chat messages. We'll do so by running `ng g component message-view` (wherein g is short for generate).
+This will now have created a folder named `message-view` in which the basics of our message-view component have been scaffolded for us. The newly generated component will have a selector of `app-messages-view`. We'll add that as a custom element to our `app.component.html`. If all went well the browser will now show "message-view works!"
 
 
 
