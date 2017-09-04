@@ -9,12 +9,19 @@ app.get('/', function(req, res){
 io.on('connection', function(socket){
 
   console.log('a user connected');
-  socket.broadcast.emit('new user', 'A new user has joined the chat');
+  socket.broadcast.emit('new user', {
+    body: 'A new user has joined the chat',
+    timestamp: Date.now()
+  });
 
   socket.on('chat message', function(msg){
     const msgLength = msg.trim().length;
+    const timestamp = Date.now();
     if(msgLength > 0) {
-      io.emit('chat message', msg);
+      io.emit('chat message', {
+        body: msg,
+        timestamp: timestamp
+      });
     }
   });
 

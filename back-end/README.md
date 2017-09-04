@@ -7,11 +7,17 @@ For the back-end we're going to use [Express](https://expressjs.com/) & [Socket.
 
 Explain that we will not be making an end-all chat application, but a rather quick tour through some of the possibilities, for re-use. Entice readers to improvise and improve/expand.
 
-## Getting started with a simple chat application
-Create a project folder in a place to your liking.
-Open terminal and run `npm init` to initialize NPM and follow the instructions, this will create a **package.json** file, that will contain a little information about our project and it's dependencies. From now on when we install a dependency by running `npm install` it gets added to the node_modules folder.
+http://cssreference.io/
+http://codepen.io/
 
-### Setting up a web server
+~~Explain other uses; e.g. I've used the websockets to create a control interface for an escape room.~~
+
+## 1.0 Getting started with a simple chat application
+First make sure you have [NodeJS](https://nodejs.org) installed, in most cases it's best to download the LTS version (long term support).
+Then, create a project folder named "chat-tutorial" in a place to your liking and create another folder in there named "back-end".
+Open terminal and [navigate to the "back-end" folder](https://computers.tutsplus.com/tutorials/navigating-the-terminal-a-gentle-introduction--mac-3855) and run `npm init` to initialize NPM (node package manager) and follow the instructions, this will create a **package.json** file, that will contain a little information about our project and it's dependencies. From now on when we install a dependency by running `npm install` it gets added to the node_modules folder.
+
+### 1.1 Setting up a web server
 First we're going to install [express](https://expressjs.com/) to make sure express is installed every time we install our project later on, we're going to use `npm install --save express`, the `--save` flag makes sure our dependencies are saved to our **package.json** file, and will serve as instructions for later installations.
 
 Our **package.json** should now contain the following:
@@ -45,7 +51,7 @@ Finally the http server is instructed to listen on port 3000.
 Now we're heading back to our terminal and we're going to run `node index.js`, this will instruct Node.js to execute our **index.js**.
 Now you should see `listening on *:3000` in your terminal. Now open your browser and visit [localhost:3000](http://localhost:3000), where you will now see a title saying "**Hello World**".
 
-### Serving files
+### 1.2 Serving files
 Right now we're only sending a single line of HTML back to the visitor, to write all our HTML in the **index.js** file would be rather cumbersome. Instead we're going to create an HTML file called **index.html** and send that back to the visitor. first the create the file and fill it with some basic HTML templating.
 
 **💡 Tip: Depending on what editor you're using an [Emmet](https://emmet.io/) might be available as plugin/package. [Emmet](https://emmet.io/) is a tool that will help you write HTML more efficient.**
@@ -88,7 +94,7 @@ The `__dirname` here is a so called *global* supplied by Node.js that supplies u
 
 Next we're going to need to restart our application to have it pickup these changes, you can do so by pressing `ctrl`+`c` to end the current process in your terminal. Next we're going to run `node index.js` again.
 
-### Live communication
+### 1.3 Live communication
 
 A chat wouldn't be much of a chat if we weren't able to communicate in (close to) realtime, for this we'll be using websockets, to make our lives easier we're going to call upon [socket.io](https://socket.io/) to handle that for us, first we'll install it by running:
 
@@ -149,11 +155,15 @@ The back-end will need to know what to listen for and how to react to it, we'll 
   });
 ```
 
-Next, we'll want to make sure everyone of our visitors gets the actual message, as such we will replace the logging with an emitting of the message to all connected sockets. That is, if the message contains more than 0 characters that are not whitespace, [trim()](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String/Trim) will take care of the whitespace for us.
+Next, we'll want to make sure everyone of our visitors gets the actual message, as such we will replace the logging with an emitting of the message to all connected sockets. That is, if the message contains more than 0 characters that are not whitespace, [trim()](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String/Trim) will take care of the whitespace for us. We'll add a [timestamp](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/now) to the message as well so that we can use this additional data to display the time when the message was received by the server. You could also pass other types of information in this way by sending back an [object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object) instead of the [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String).
 ``` javascript
   const msgLength = msg.trim().length;
+  const timestamp = Date.now();
   if(msgLength > 0) {
-    io.emit('chat message', msg);
+    io.emit('chat message', {
+      body: msg,
+      timestamp: timestamp
+    });
   }
 ```
 
@@ -162,10 +172,10 @@ Now that we're emitting the chat message to all connected sockets, those need to
 const messages = document.querySelector('.chat__messages');
 ```
 ``` javascript
-socket.on('chat message', function(msg){
+socket.on('chat message', function(message){
   const newMessage = document.createElement('li');
   newMessage.classList.add('chat__messages__message');
-  newMessage.innerHTML = msg;
+  newMessage.innerHTML = message.body;
   messages.append(newMessage);
   messages.scrollTop = messages.scrollHeight;
 });
@@ -175,15 +185,18 @@ Restart your server and reload the page to see your chat working!
 
 Now we're going to add some other kind of message; we're going to notify others if someone joins our chat. We're going to "broadcast" an emission, that gets sent to everyone but the current socket:
 ``` javascript
-socket.broadcast.emit('new user', 'A new user has joined the chat');
+socket.broadcast.emit('new user', {
+  body: 'A new user has joined the chat',
+  timestamp: Date.now()
+});
 ```
 
 On the front-end we will listen for the "new user" emission and act accordingly, now what we might want to do is pretty much copy the code from our other message and add the system specific class:
 ``` javascript
-socket.on('new user', function(msg){
+socket.on('new user', function(message){
   let newMessage = document.createElement('li');
   newMessage.classList.add('chat__messages__message', 'chat__messages__message--system');
-  newMessage.textContent = msg;
+  newMessage.textContent = message.body;
   messages.appendChild(newMessage);
   messages.scrollTop = messages.scrollHeight;
 });
@@ -200,7 +213,7 @@ function messageHandler(message, system) {
   if(system) {
     newMessage.classList.add('chat__messages__message--system');
   }
-  newMessage.textContent = message;
+  newMessage.textContent = message.body;
   messages.appendChild(newMessage);
   messages.scrollTop = messages.scrollHeight;
 }
@@ -214,11 +227,11 @@ socket.on('new user', function(msg){
 });
 ```
 
-One other thing that we're going to add is a timestamp as data attribute that we will position with CSS. Add the following function before our messageHandler function.
+One other thing that we're going to add is a time indication as data attribute that we will position with CSS. Add the following function before our messageHandler function.
 
 ``` javascript
-function getTimeStamp() {
-  const d = new Date();
+function resolveTimestamp(timestamp) {
+  const d = new Date(timestamp);
   let minutes = d.getMinutes();
   let seconds = d.getSeconds();
   minutes = minutes < 10 ? '0'+minutes : minutes;
@@ -229,13 +242,12 @@ function getTimeStamp() {
 
 To add it to the message add the following just above the `message.appendChild(newMessage)` in our messageHandler:
 ``` javascript
-newMessage.setAttribute('data-timestamp', getTimeStamp());
+newMessage.setAttribute('data-timestamp', resolveTimestamp(message.timestamp));
 ```
-### Some styling
+### 1.4 Adding some style
 
-Finally we'll add some styles, I've created some simple styles for you to use, feel free to create your own, you can place this just above the closing "head" tag:
+Finally we'll add some styles, I've created some simple styles for you to use, feel free to create your own, you can place this in `<style></style>` tags just above the closing "head" tag:
 ``` css
-<style>
   *, *:before, *:after {
     box-sizing: border-box;
   }
@@ -309,16 +321,43 @@ Finally we'll add some styles, I've created some simple styles for you to use, f
     border-color: rgb(4, 79, 43);
     color: white;
   }
-</style>
 ```
+
 **💡 Tip: declaring ["box-sizing: border-box;"](https://developer.mozilla.org/docs/Web/CSS/box-sizing) for all elements can make CSS a lot nicer to work with, it'll make sure that paddings are not added to any dimensions but rather subtracted, allowing for much easier styling, give it a try!**
 
 **💡 Tip: declare your font and type related styling on the html selector, that was you can rely on [rem units](https://developer.mozilla.org/docs/Web/CSS/font-size#Rems) throughout your CSS and even scale sizes all at once by adding a [media query](https://developer.mozilla.org/docs/Web/CSS/Media_Queries/Using_media_queries) to your html selector.**
 
-## Taking it up a notch, (re)creating the front-end in [angular](https://angular.io/)
+Now if you were to open your ports for access from another computer (be careful!) or run this on a Node.JS server (perhaps on a Raspberry Pi or something similar) you'll have a chat application that you and others can use! By now you might've thought of some other applications for these techniques. One of those applications I found was to use the socket communication back and forth to control Arduino's from a Raspberry (or just the i/o pins on the Raspberry) (using [Johnny-Five.io](http://johnny-five.io/)) from a web interface. Think of all the possibilities!
 
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+## 2.0 Taking it up a notch, (re)creating the front-end in [angular](https://angular.io/)
 
+For this second part we will be creating a new front-end for our chat application. We'll be using angular. The current version of angular uses Microsoft's [TypeScript](https://www.typescriptlang.org/) which is a superset of JavaScript that introduces typing and annotations to JavaScript as well as adding support for the latest features of JavaScript as well as future functionality (those that are yet to land in browsers) by supporting the new syntax and compiling that to JS that current browsers do support. In regards to typing: where as normal JavaScript would allow you to define a variable like `let example = true;` (a boolean) and later overwrite that by `example = 1` (a number), TypeScript will prevent you from doing this and forces you write cleaner and more maintainable code if you adhere to its standard. I would suggest reading up a little on the [fundamentals of angular](https://angular.io/guide/architecture) before we continue. One of the key take aways there will be:
+
+> You write Angular applications by composing **HTML templates with Angularized markup**, writing component **classes to manage those templates**, adding **application logic in services**, and **boxing components and services in modules**. - [angular.io](https://angular.io/guide/architecture)
+
+Luckily angular has a CLI (command line interface) which will help us by creating a lot of the code we need to get started for us! Let's get going.
+
+*Obviously our previous setup with express/socket.io is not a requirement for angular, we will just be using it as our back-end for the sake of this tutorial*
+
+### Setting up
+
+First we're going to install the Angular CLI globally (that means it'll be available from all folders in our terminal after we're done, so it won't be a dependency just for our project).
+At the time of writing we need to make sure our node version is at least `6.9.x or higher` and our npm version is at least `3.x.x or higher`.
+
+**💡 Tip: You can check your node version by typing `node -v` in your terminal, the same goes for npm `npm -v`.**
+
+**💡 Tip: If you're on a Mac and you'd like to update your node or npm or need to switch to an older or newer version in case of breaking updates or outdated projects take a look at [nvm](https://github.com/creationix/nvm) (despite the acronym that's not "never mind", it's Node version manager😉).**
+
+Now let's install the Angular CLI by running `npm install -g @angular/cli` in our terminal, the `-g` means that it'll be installed globally so that you can use it from anywhere from then on. Go back to your "chat-tutorial" folder and run `ng new front-end`. This will create a new folder in our "chat-tutorial" folder named "front-end" containing the basic setup of our angular project. Neat!
+
+
+
+Angular CLI
+- Components
+- socket services
+- styles
+- further expansions
+https://angular.io/api/animations/stagger
 
 
 

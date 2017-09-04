@@ -103,8 +103,8 @@
         message.value = '';
       });
 
-      function getTimeStamp() {
-        const d = new Date();
+      function resolveTimestamp(timestamp) {
+        const d = new Date(timestamp);
         let minutes = d.getMinutes();
         let seconds = d.getSeconds();
         minutes = minutes < 10 ? '0'+minutes : minutes;
@@ -119,8 +119,8 @@
         if(system) {
           newMessage.classList.add('chat__messages__message--system');
         }
-        newMessage.textContent = message;
-        newMessage.setAttribute('data-timestamp', getTimeStamp());
+        newMessage.textContent = message.body;
+        newMessage.setAttribute('data-timestamp', resolveTimestamp(message.timestamp));
         messages.appendChild(newMessage);
         messages.scrollTop = messages.scrollHeight;
       }
