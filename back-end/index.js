@@ -38,7 +38,7 @@ function deregisterUser(id) {
 
 function emitUserList(socket) {
   socket.broadcast.emit('user list', {
-    body: users,
+    users: users,
     timestamp: Date.now()
   });
 }
@@ -78,7 +78,7 @@ io.on('connection', function(socket){
     console.log('user disconnected');
     var username = deregisterUser(socket.id);
     socket.broadcast.emit('user left', {
-      body: username,
+      username: username,
       timestamp: Date.now()
     })
 

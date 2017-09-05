@@ -298,7 +298,7 @@ To update everyone of the state of the users, we'll emit the list to all who are
 ``` javascript
 function emitUserList(socket) {
   socket.broadcast.emit('user list', {
-    body: users,
+    users: users,
     timestamp: Date.now()
   });
 }
@@ -341,7 +341,7 @@ io.on('connection', function(socket){
     console.log('user disconnected');
     var username = deregisterUser(socket.id);
     socket.broadcast.emit('user left', {
-      body: username,
+      username: username,
       timestamp: Date.now()
     })
 
@@ -375,7 +375,7 @@ function messageHandler(message, system) {
 ```
 
 Now the messageHandler function adds a "strong" element to the chat message containing the username we've sent with it.
-We'll expand on the usage of user list in the second part of the tutorial. 
+We'll expand on the usage of user list in the second part of the tutorial.
 
 ### 1.5 Adding some style
 
@@ -470,9 +470,12 @@ For this second part we will be creating a new front-end for our chat applicatio
 
 Luckily angular has a CLI (command line interface) which will help us by creating a lot of the code we need to get started for us! Let's get going.
 
+**💡 Tip: If you're using a text editor that allows for plugins/extensions like [Atom](https://atom.io/). I'd advise you to install the relevant typescript and angular plugins, this'll make your programming a whole lot more fun.**
+
+
 *Obviously our previous setup with express/socket.io is not a requirement for angular, we will just be using it as our back-end for the sake of this tutorial*
 
-### Setting up
+### 2.1 Setting up
 
 First we're going to install the Angular CLI (Command Line Interface) globally (that means it'll be available from all folders in our terminal after we're done, so it won't be a dependency just for our project).
 At the time of writing we need to make sure our node version is at least `6.9.x or higher` and our npm version is at least `3.x.x or higher`.
@@ -483,17 +486,45 @@ At the time of writing we need to make sure our node version is at least `6.9.x 
 
 Now let's install the Angular CLI by running `npm install -g @angular/cli` in our terminal, the `-g` means that it'll be installed globally so that you can use it from anywhere from then on. Go back to your "chat-tutorial" folder and run `ng new front-end --style scss`. This will create a new folder in our "chat-tutorial" folder named "front-end" containing the basic setup of our angular project using `scss` for CSS. Neat!
 
+If you're unfamiliar with [SCSS (or Sass): it's an extension of the CSS language](http://sass-lang.com/), the allows for the usage of includes, functions, variables, and a whole bunch of other helpful things that get compiled to standard CSS so that it'll work in all your favorite browsers!
+
 Now move to our new folder in the terminal. If you'll now run `ng serve`, and visit the url (localhost:4200) you'll see a little page with some links to angular related content. When you're running `ng serve` it will automatically update the resources you change in the front-end project. As somewhat usual, the builtin server starts serving from `src/index.html` in there you'll see a tag named `app-root`, this refers to the component defined you'll find the `app` folder and the HTML it outputs can be found in the `app/app.component.html` file. For now empty that file.
 
-### Creating our first component, the message view
+Personally I like giving any page I'm working on a little bit of basic styling. If think you'll like that as well, add some to the `styles.scss`.
+Here's what I've added:
+``` scss
+*,*::before,*::after {
+  box-sizing: border-box;
+}
+html {
+  font-family: sans-serif;
+  font-size: 16px;
+  line-height: 1.35;
+}
+body {
+  margin: 0;
+}
+```
 
-Next we're going to create a component to view the chat messages. We'll do so by running `ng g component message-view` (wherein g is short for generate).
-This will now have created a folder named `message-view` in which the basics of our message-view component have been scaffolded for us. The newly generated component will have a selector of `app-messages-view`. We'll add that as a custom element to our `app.component.html`. If all went well the browser will now show "message-view works!"
+**💡 Tip: declaring ["box-sizing: border-box;"](https://developer.mozilla.org/docs/Web/CSS/box-sizing) for all elements can make CSS a lot nicer to work with, it'll make sure that paddings are not added to any dimensions but rather subtracted, allowing for much easier styling, give it a try!**
+
+### 2.2 Creating our first component, the messages view
+
+Next we're going to create a component to view the chat messages. We'll do so by running `ng g component messages-view` (wherein g is short for generate).
+This will now have generated a folder named `messages-view` in which the basics of our message-view component have been scaffolded for us. The newly generated component will have a selector of `app-messages-view`. We'll add that as a custom element to our `app.component.html`. If all went well the browser will now show "messages-view works!"
+
+
+
+
+
+
+
+
+
 
 
 
 Angular CLI
-- Install typescript plugin for atom (tip/hint)
 - Components
 - socket services
 - styles
@@ -502,11 +533,7 @@ Angular CLI
 https://angular.io/api/animations/stagger
 
 TODO:
-- add further stuff to backend?
-- author names, store an array of users and uuids in memory
 - show list of current users, ask users for name and register uuid
-- match user/uuid to session? (  var sid = req.sessionID;)
-- in memory storage?
 
 
 
