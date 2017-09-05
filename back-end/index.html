@@ -109,17 +109,21 @@
         let seconds = d.getSeconds();
         minutes = minutes < 10 ? '0'+minutes : minutes;
         seconds = seconds < 10 ? '0'+seconds : seconds;
-        return d.getMonth()+1 + "/" + d.getDate() + "/" + d.getFullYear() + "  " + d.getHours() + ":" + minutes + ":" + seconds;
+        return d.getMonth()+1 + "/" + d.getDate() + "/" + d.getFullYear() + " " + d.getHours() + ":" + minutes + ":" + seconds;
       }
 
       function messageHandler(message, system) {
         system = (system === true);
         const newMessage = document.createElement('li');
+        const nameElement = document.createElement('strong');
         newMessage.classList.add('chat__messages__message');
         if(system) {
           newMessage.classList.add('chat__messages__message--system');
+        } else {
+          nameElement.textContent = message.username;
+          newMessage.innerHTML = nameElement.outerHTML+": ";
         }
-        newMessage.textContent = message.body;
+        newMessage.innerHTML += message.body;
         newMessage.setAttribute('data-timestamp', resolveTimestamp(message.timestamp));
         messages.appendChild(newMessage);
         messages.scrollTop = messages.scrollHeight;

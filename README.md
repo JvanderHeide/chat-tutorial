@@ -244,7 +244,140 @@ To add it to the message add the following just above the `message.appendChild(n
 ``` javascript
 newMessage.setAttribute('data-timestamp', resolveTimestamp(message.timestamp));
 ```
-### 1.4 Adding some style
+
+### 1.4 Keeping track of users
+One more thing well do for now (which we'll expand upon in the front-end/second/angular part of this tutorial) is add a means to keep track of who's in the chat and give them a name. To do so we'll add an array outside of the sockets to store our users. This array only gets instantiated on starting the web server so it's shared between all future requests.  
+
+``` javascript
+const users = [];
+```
+
+Next we'll use a couple functions to help us keep track of the users.
+``` javascript
+function registerUser(name, id) {
+  users.push({
+    id: id,
+    name: name
+  });
+}
+```
+This function will allow us to push an [object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object) containing an id and a name, to the users array.
+We'll want to keep the id a relative secret so we'll only use it internally to get a reference to the user in the array.
+
+``` javascript
+function getUserById(id) {
+  return users.find(function(user, index, array){
+    if(user) {
+      if(user.id === id) {
+        return user;
+      }
+    }
+    return null;
+  });
+}
+```
+
+This function uses [Array.prototype.find()]https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array/find] to return the user in the array that matches the id. Next we'll want to be able to deregisterUsers when they leave.
+
+``` javascript
+function deregisterUser(id) {
+  var user = getUserById(id);
+  var userName = user.name;
+  if(user) {
+    var userIndex = users.indexOf(user);
+    users.splice(userIndex, 1);
+  }
+  return userName;
+}
+```
+
+This function takes an idea and finds the referenced user in the users array, next it [splices](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array/splice) the user from the array, using the [delete operator](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Operators/delete) would've worked as well but that wouldn't reset length of the array, and thus give a somewhat crooked representation of the user list.
+
+To update everyone of the state of the users, we'll emit the list to all who are connected whenever something changes.
+
+``` javascript
+function emitUserList(socket) {
+  socket.broadcast.emit('user list', {
+    body: users,
+    timestamp: Date.now()
+  });
+}
+```
+
+Finally we'll finish this part of the back-end by using these functions to changing our socket connection to look like this:
+``` javascript
+io.on('connection', function(socket){
+
+  console.log('a user connected');
+
+  registerUser("Anonymous", socket.id);
+  emitUserList(socket);
+
+  socket.broadcast.emit('new user', {
+    body: 'A new user has joined the chat',
+    timestamp: Date.now()
+  });
+
+  socket.on('user update', function(msg) {
+    var currentUser = getUserById(socket.id);
+    currentUser.name = msg.body;
+    emitUserList(socket);
+  });
+
+  socket.on('chat message', function(msg){
+    const username = getUserById(this.id).name;
+    const msgLength = msg.trim().length;
+    const timestamp = Date.now();
+    if(msgLength > 0) {
+      io.emit('chat message', {
+        body: msg,
+        timestamp: timestamp,
+        username: username
+      });
+    }
+  });
+
+  socket.on('disconnect', function(){
+    console.log('user disconnected');
+    var username = deregisterUser(socket.id);
+    socket.broadcast.emit('user left', {
+      body: username,
+      timestamp: Date.now()
+    })
+
+    emitUserList(socket);
+  });
+
+});
+```
+
+Can you see what we're doing here and how we could use this later on?
+
+We could use this to add the username to our messages in the front-end like so:
+
+``` javascript
+function messageHandler(message, system) {
+  system = (system === true);
+  const newMessage = document.createElement('li');
+  const nameElement = document.createElement('strong');
+  newMessage.classList.add('chat__messages__message');
+  if(system) {
+    newMessage.classList.add('chat__messages__message--system');
+  } else {
+    nameElement.textContent = message.username;
+    newMessage.innerHTML = nameElement.outerHTML+": ";
+  }
+  newMessage.innerHTML += message.body;
+  newMessage.setAttribute('data-timestamp', resolveTimestamp(message.timestamp));
+  messages.appendChild(newMessage);
+  messages.scrollTop = messages.scrollHeight;
+}
+```
+
+Now the messageHandler function adds a "strong" element to the chat message containing the username we've sent with it.
+We'll expand on the usage of user list in the second part of the tutorial. 
+
+### 1.5 Adding some style
 
 Finally we'll add some styles, I've created some simple styles for you to use, feel free to create your own, you can place this in `<style></style>` tags just above the closing "head" tag:
 ``` css
@@ -352,17 +485,28 @@ Now let's install the Angular CLI by running `npm install -g @angular/cli` in ou
 
 Now move to our new folder in the terminal. If you'll now run `ng serve`, and visit the url (localhost:4200) you'll see a little page with some links to angular related content. When you're running `ng serve` it will automatically update the resources you change in the front-end project. As somewhat usual, the builtin server starts serving from `src/index.html` in there you'll see a tag named `app-root`, this refers to the component defined you'll find the `app` folder and the HTML it outputs can be found in the `app/app.component.html` file. For now empty that file.
 
+### Creating our first component, the message view
+
 Next we're going to create a component to view the chat messages. We'll do so by running `ng g component message-view` (wherein g is short for generate).
 This will now have created a folder named `message-view` in which the basics of our message-view component have been scaffolded for us. The newly generated component will have a selector of `app-messages-view`. We'll add that as a custom element to our `app.component.html`. If all went well the browser will now show "message-view works!"
 
 
 
 Angular CLI
+- Install typescript plugin for atom (tip/hint)
 - Components
 - socket services
 - styles
 - further expansions
+
 https://angular.io/api/animations/stagger
+
+TODO:
+- add further stuff to backend?
+- author names, store an array of users and uuids in memory
+- show list of current users, ask users for name and register uuid
+- match user/uuid to session? (  var sid = req.sessionID;)
+- in memory storage?
 
 
 
