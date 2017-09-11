@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Message } from "../message";
+import { ChatService } from "../chat.service";
 import { SystemMessage } from "../system-message";
 
 @Component({
@@ -9,12 +10,18 @@ import { SystemMessage } from "../system-message";
 })
 export class MessageViewComponent implements OnInit {
 
-  messages = new Array<Message>();
+  private messages = new Array<Message>();
 
-  constructor() { }
+  constructor(private chatService: ChatService) {
+    (chatService.messages).subscribe(
+      message => {
+        this.messages.push(message);
+      }
+    );
+  }
 
   ngOnInit() {
-    this.addMessage(new SystemMessage("Welcome to the chat"));
+    // this.addMessage(new SystemMessage("Welcome to the chat"));
   }
 
   addMessage(message: Message) {

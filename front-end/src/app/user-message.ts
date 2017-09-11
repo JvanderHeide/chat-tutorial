@@ -5,9 +5,9 @@ export class UserMessage implements Message {
   timestamp: Number;
   username: String;
 
-  constructor(username: String, message: String) {
+  constructor(username: String, message: String, timestamp: Number = Date.now()) {
     this.message = message;
-    this.timestamp = Date.now();
+    this.timestamp = timestamp;
     this.username = username;
   }
 }

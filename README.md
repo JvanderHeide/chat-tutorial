@@ -525,7 +525,7 @@ For now we'll want an Array of the messages we'll be displaying, we'll start out
 In our `MessageViewComponent` (`message-view.component.ts`) class we'll add a private data member called messages, which we'll instantiate as an empty Array of objects. In JavaScript however, almost all types of variables are instances of Object, and as such typing would have little to no effect, but we'll handle that later. It's common to declare data members in the beginning of the class (before the constructor).
 
 ``` javascript
-messages = new Array<Object>();
+private messages = new Array<Object>();
 ```
 
 Next we'll need some means of setting and getting the messages, we'll do this with something similar to getters and setters in other languages (though JavaScript is not as strict still). We'll add these functions bellow our constructor and bellow the `ngOnInit` (or similar if the class implements an other variant).
@@ -564,15 +564,15 @@ export class SystemMessage implements Message {
   message: String;
   timestamp: Number;
 
-  constructor(message: String) {
+  constructor(message: String, timestamp: Number = Date.now()) {
     this.message = message;
-    this.timestamp = Date.now();
+    this.timestamp = timestamp;
   }
 
 }
 ```
 
-First we'll need to import the Message interface to make sure that our class knows what we're going on about. Next we'll say that our SystemMessage is an implementation of our Message interface. We'll add a constructor to the class (a function that gets called when you instantiate a class), in which we'll pass the message and for now set the timestamp automatically.
+First we'll need to import the Message interface to make sure that our class knows what we're going on about. Next we'll say that our SystemMessage is an implementation of our Message interface. We'll add a constructor to the class (a function that gets called when you instantiate a class), in which we'll pass the message and for now set the timestamp automatically. We've also added the timestamp with a default value of `Date.now()`.
 
 We'll do the same for our UserMessage, but we'll add the username in there as well.
 ``` javascript
@@ -583,13 +583,15 @@ export class UserMessage implements Message {
   timestamp: Number;
   username: String;
 
-  constructor(username: String, message: String) {
+  constructor(username: String, message: String, timestamp: Number = Date.now()) {
     this.message = message;
-    this.timestamp = Date.now();
+    this.timestamp = timestamp;
     this.username = username;
   }
 }
 ```
+
+You might have noticed that our Message classes don't use private. This is since they should implement Message, in TypeScript, interfaces don't check private members on implementations sadly. So for now this would return an error. This may change in the future.
 
 Now we know what our messages will look like, we'll head back to our `message-view.component.ts` file. We'll import the `Message` interface.
 ``` javascript
@@ -603,7 +605,7 @@ ngOnInit() {
 }
 ```
 
-#### 2.2.2 templating
+#### 2.2.2 Templating
 
 Angular comes with its own (templating engine)[https://angular.io/guide/template-syntax], which will allow for a lot of things that come built-in but also allow us to extends it with custom [directives](https://angular.io/api/core/Directive) or [pipes](https://angular.io/api/core/Pipe). For now however we'll use the built-ins.
 
@@ -619,8 +621,8 @@ Next we'll use the angular's interpolation (`{{ ... }}`) to show the values of o
 ``` html
 <ol class="message-list">
   <li class="message" *ngFor="let message of messages;" [ngClass]="{'message--system': (message.constructor.name === 'SystemMessage')}">
-    <span *ngIf="message.username" class="message__author">{{message.username}}</span>
     <time class="message__timestamp">{{message.timestamp}}</time>
+    <span *ngIf="message.username" class="message__author">{{message.username}}</span>
     <span class="message__content">{{message.message}}</span>
   </li>
 </ol>
@@ -665,16 +667,108 @@ Now apply some styling from our `message-view.component.scss`. If you'd just lik
 }
 ```
 
+### 2.3 Getting the messages from the socket server
+
+Now sure it'd be nice if we'd be able to actually show message that we're sent to the back-end (as done in the first part of this tutorial).
+Now we could create this connection to get and post the messages again and again for every component (the view and in the next step the message-writer).
+But these kinds of shared functionality are better of in (services)[https://angular.io/guide/architecture#service].
+
+Let's create one! We can do so by running `ng g service chat` from the terminal.
+To be able to share it with all the components add it to the providers in `app.module.ts`.
+
+``` javascript
+import { ChatService } from './chat.service';
+```
+
+``` javascript
+providers: [ChatService],
+```
+
+We'll start by defining at what url the socket server is running, to do so in a way that easily allows us to switch to the production url if we ever go live with the chat we'll use the environment variables that come with angular. Open `environments/environment.ts` and `environments/environment.prod.ts` and add a `socketServer` property and set it to the respective url (localhost:3000 by default for this tutorial).
+
+We'll also need to know about socket.io in this service, as well as about all our different message implementations. Finally we'll need to import `BehaviorSubject` from rxjs to allow us to act when and only when something changes in that specific variable.
+
+``` javascript
+import { Injectable } from '@angular/core';
+import { environment } from '../environments/environment'
+import * as io from 'socket.io-client';
+import { Message } from './message';
+import { UserMessage } from './user-message';
+import { SystemMessage } from './system-message';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+```
+
+**💡 Tip: If you get a message that any of these packages are undefined install them using
+npm, additionaly you might be required to restart your `ng serve` to load the new dependencies.**
 
 
-Angular CLI
-- Components
-- socket services
-- styles
-- further expansions
-- explain pipes
-- Later sort by timestamp (syncing explanation)
-https://angular.io/api/animations/stagger
+Next we'll define the variable in our service:
+
+``` javascript
+private socketUrl:String = environment.socketServer;
+private socket:any = null;
+private messageSubject:BehaviorSubject<Message> = new BehaviorSubject<Message>(
+  new SystemMessage("Welcome to the chat")
+);
+```
+
+Notice that we've set socket to be of type "any", this will allow it to be anything. Since we can't know right now what type socket will be and we'll only use it once and we know what we're doing we can allow this for once. Do not use "any" just if something doesn't take, use typing consistently, this will make it easier to maintain your code in a larger code base.
+
+Next we'll initialize our socket variable in the constructor and add some listeners to the sockets for getting the messages. And we'll add a [getter](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/get) for the messages for convenience sake.
+
+
+
+``` javascript
+constructor() {
+  this.socket = io(this.socketUrl);
+
+  this.socket.on('new user', (input) => {
+    const message = new SystemMessage(input.body);
+    this.messageSubject.next(message);
+  });
+
+  this.socket.on('chat message', (input) => {
+    const message = new UserMessage(input.username, input.body);
+    this.messageSubject.next(message);
+  });
+
+}
+
+get messages() {
+  return this.messageSubject;
+}
+```
+
+Now we'll hook it up to our message-view component.
+Import the ChatService, and remove this SystemMessage import, since we won't be using that anymore. We'll be injecting the chatService in to our constructor and subscribe to the messages. Next every time a message comes in we'll add it to the array in our messages-view component.
+
+``` javascript
+constructor(private chatService: ChatService) {
+  (chatService.messages).subscribe(
+    message => {
+      this.messages.push(message);
+    }
+  );
+}
+
+ngOnInit() {
+}
+```
+
+### 2.4 Posting messages
+
+
+
+
+
+### 2.5 Users
+
+
+
+## 3 Things you could try to add
+- Adding messages by the current user to the view instantly and showing it's in progress if the connection is slow.
+- Add indicators to show a user is typing
+
 
 TODO:
 - show list of current users, ask users for name and register uuid

@@ -4,9 +4,9 @@ export class SystemMessage implements Message {
   message: String;
   timestamp: Number;
 
-  constructor(message: String) {
+  constructor(message: String, timestamp: Number = Date.now()) {
     this.message = message;
-    this.timestamp = Date.now();
+    this.timestamp = timestamp;
   }
 
 }
