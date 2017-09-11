@@ -15,31 +15,54 @@
 .message {
   display: flex;
   flex-flow: wrap;
-  padding: 1rem 1.5rem;
+  padding: 0.5rem 0.75rem;
   border-radius: 0.5rem;
   flex-direction: column;
+  background: rgba(#000, 0.025);
+  margin: 1rem auto 1rem 0.75rem;
+  position: relative;
+  max-width: 50%;
 
   &--system {
-    background-color: rgba(#000, 0.025);
+    // background-color: rgba(#000, 0.025);
     color: rgba(#000, 0.25);
     width: 100%;
     flex-direction: row;
     font-size: 0.7rem;
+    margin: 1rem 0.75rem;
+    border-radius: 0;
+    background: transparent;
+    padding: 0;
+    max-width: none;
 
   }
   &--system &__content {
     margin-left: 0.5rem;
   }
   &--self {
-    margin-left: auto;
+    margin: 1rem 0.75rem 1rem auto;
   }
   &--self &__timestamp {
     margin-left: auto;
+    left: auto;
+    right: 0;
+  }
+  &--system &__timestamp {
+    position: static;
+  }
+  &--system + & {
+    margin-top: 1.35rem;
+  }
+  &--system + &--system {
+    margin-top: 0;
   }
   &__timestamp {
     color: rgba(#000, 0.25);
     // margin-right: 0.5rem;
     font-size: 0.7rem;
+    position: absolute;
+    top: -1.25rem;
+    left: 0;
   }
   &__author {
     font-weight: bold;
