@@ -1,7 +1,7 @@
 <ol class="message-list">
-  <li class="message" *ngFor="let message of messages;" [ngClass]="{'message--system': (message.constructor.name === 'SystemMessage')}">
+  <li class="message" *ngFor="let message of messages;" [ngClass]="{'message--system': (message.constructor.name === 'SystemMessage'), 'message--self': (message.user ? message.user.id === currentUserId : false)}">
     <time class="message__timestamp">{{message.timestamp | date:'mediumTime'}}</time>
-    <span *ngIf="message.username" class="message__author">{{message.username}}</span>
+    <span *ngIf="message.user" [style.color]="message.user.id | toColor" class="message__author">{{message.user.name}}</span>
     <span class="message__content">{{message.message}}</span>
   </li>
 </ol>

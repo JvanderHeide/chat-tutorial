@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, AfterViewChecked, ElementRef } from '@angular/core';
 import { Message } from "../message";
 import { ChatService } from "../chat.service";
 
@@ -7,23 +7,38 @@ import { ChatService } from "../chat.service";
   templateUrl: './message-view.component.html',
   styleUrls: ['./message-view.component.scss']
 })
-export class MessageViewComponent implements OnInit {
+export class MessageViewComponent implements AfterViewChecked {
 
-  private messages = new Array<Message>();
+  private messages:Array<Message> = new Array<Message>();
+  private allowScrolling:Boolean = false;
 
-  constructor(private chatService: ChatService) {
+  constructor(private chatService: ChatService, private elRef:ElementRef) {
     (chatService.messages).subscribe(
       message => {
         this.messages.push(message);
+        this.allowScrolling = true;
       }
     );
   }
 
-  ngOnInit() {
+  ngAfterViewChecked() {
+    this.scrollInToView();
+  }
+
+
+  scrollInToView(): void {
+    if(this.allowScrolling) {
+      this.elRef.nativeElement.scrollTop = this.elRef.nativeElement.scrollHeight;
+      this.allowScrolling = false;
+    }
   }
 
   addMessage(message: Message): void {
     this.messages.push(message);
+  }
+
+  get currentUserId(): String {
+    return this.chatService.currentUserId;
   }
 
 }

@@ -36,8 +36,8 @@ function deregisterUser(id) {
   return userName;
 }
 
-function emitUserList(socket) {
-  socket.broadcast.emit('user list', {
+function emitUserList() {
+  io.sockets.emit('user list', {
     users: users,
     timestamp: Date.now()
   });
@@ -48,41 +48,45 @@ io.on('connection', function(socket){
   console.log('a user connected');
 
   registerUser("Anonymous", socket.id);
-  emitUserList(socket);
+  emitUserList();
 
   socket.broadcast.emit('new user', {
     body: 'A new user has joined the chat',
     timestamp: Date.now()
   });
 
-  socket.on('user update', function(msg) {
+  socket.on('user update', function(username) {
     var currentUser = getUserById(socket.id);
-    currentUser.name = msg.body;
-    emitUserList(socket);
+    console.log(this.id, socket.id, username);
+    if(this.id === socket.id) {
+      currentUser.name = username;
+      emitUserList();
+    }
   });
 
   socket.on('chat message', function(msg){
-    const username = getUserById(this.id).name;
+    const user = getUserById(this.id);
     const msgLength = msg.trim().length;
     const timestamp = Date.now();
     if(msgLength > 0) {
       io.emit('chat message', {
         body: msg,
         timestamp: timestamp,
-        username: username
+        user: user
       });
     }
   });
 
   socket.on('disconnect', function(){
     console.log('user disconnected');
-    var username = deregisterUser(socket.id);
+    const user = getUserById(socket.id);
+    const username = deregisterUser(socket.id);
     socket.broadcast.emit('user left', {
-      username: username,
+      user: user,
       timestamp: Date.now()
     })
 
-    emitUserList(socket);
+    emitUserList();
   });
 
 });

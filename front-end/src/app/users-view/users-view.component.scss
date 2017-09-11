@@ -1,0 +1,52 @@
+:host {
+  display: flex;
+  height: 100%;
+}
+.users-list {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex-direction: column;
+  border-left: 1px solid #ccc;
+  width: 100%;
+}
+
+.user {
+  display: flex;
+  flex-flow: wrap;
+  width: 100%;
+  padding: 0.25rem 0.5rem;
+  justify-content: center;
+  align-items: center;
+  border: {
+    left: {
+      width: 3px;
+      style: solid;
+    }
+    bottom: 1px solid #f8f8f8;
+  }
+  &:nth-child(odd) {
+    // background-color: rgba(#000, 0.025);
+  }
+  &__icon {
+    height: 1rem;
+    width: 1rem;
+    border-radius: 100%;
+    margin-right: 0.5rem;
+  }
+  &__name {
+    flex: 1;
+    padding: 0.5rem 0.75rem;
+    &--input {
+      margin-top: -1px;
+      font-size: 1em;
+      background-color: inherit;
+      border: none;
+      border-bottom: 1px solid rgba(#000, 0.1);
+      &:hover {
+        background-color: rgba(#000, 0.05);
+      }
+    }
+  }
+}

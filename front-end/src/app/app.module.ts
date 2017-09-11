@@ -6,12 +6,16 @@ import { AppComponent } from './app.component';
 import { MessageViewComponent } from './message-view/message-view.component';
 import { ChatService } from './chat.service';
 import { MessageWriterComponent } from './message-writer/message-writer.component';
+import { UsersViewComponent } from './users-view/users-view.component';
+import { ToColorPipe } from './to-color.pipe';
 
 @NgModule({
   declarations: [
     AppComponent,
     MessageViewComponent,
-    MessageWriterComponent
+    MessageWriterComponent,
+    UsersViewComponent,
+    ToColorPipe
   ],
   imports: [
     BrowserModule,

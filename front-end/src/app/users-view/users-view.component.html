@@ -1,0 +1,7 @@
+<ol class="users-list">
+  <li class="user" *ngFor="let user of users;" [ngClass]="{'user--self': (user.id === currentUserId)}" [style.border-left-color]="user.id | toColor">
+    <!-- <div class="user__icon"></div> -->
+    <span class="user__name" *ngIf="user.id !== currentUserId">{{user.name}}</span>
+    <input class="user__name user__name--input" [placeholder]="currentUser.name" [ngModel]="currentUser.name" (blur)="updateUsername($event)" (focus)="empty($event)" (keyup.enter)="onKeyUpEnter($event)" *ngIf="user.id === currentUserId" />
+  </li>
+</ol>
