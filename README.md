@@ -626,7 +626,7 @@ Angular comes with its own (templating engine)[https://angular.io/guide/template
 
 We'll start with an ordered list containing messages on which we'll do a [for loop](https://angular.io/api/common/NgFor), where we'll loop over all the messages and for the iteration of the loop assign them to `message`.
 
-Next we're going to give system messages a separate CSS class by using a (ternary operator)[https://developer.mozilla.org/docs/Web/JavaScript/Reference/Operators/Conditional_Operator] in an [ngClass directive](https://angular.io/api/common/NgClass), to check if the [constructor](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Classes/constructor) of the message is 'SystemMessage'.
+Next we're going to give system messages a separate CSS class in a [ngClass directive](https://angular.io/api/common/NgClass), to check if the [constructor](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Classes/constructor) of the message is 'SystemMessage'.
 
 As we know our messages may or may not have an username, by default if the username is not defined, it won't show in angular, the containing element will still render however. For our use case this is something which we don't want.
 To manage this we'll use the [ngIf directive](https://angular.io/api/common/NgIf) which will only render the element if the passed condition resolves to a (truthy)[https://developer.mozilla.org/docs/Glossary/Truthy] value.
