@@ -1,0 +1,6 @@
+<div class="message-writer">
+  <form class="message-writer__form" autocomplete="off" (ngSubmit)="submitMessage()">
+    <input name="message" type="text" [(ngModel)]="message" [placeholder]="placeholder" class="message-writer__message" />
+    <button class="message-writer__submit" [disabled]="!canSend()" [ngClass]="{'message-writer__submit--active': canSend()}">Submit</button>
+  </form>
+</div>

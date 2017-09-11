@@ -1,16 +1,15 @@
 # Chat application tutorial
 ## Introduction
-Repo for a chat application tutorial
-TODO: explain HTTP, JS, Node.js, NPM, express, socket.io
 
-For the back-end we're going to use [Express](https://expressjs.com/) & [Socket.io](https://socket.io/)
+In this tutorial we'll try to create a simple chat application that will allow you to expand it and serve as an inspiration for other things you could do with these techniques. The techniques you'll see here have inspired me to now only use it on the web but on things like an Arduino or a Raspberry Pi as well.
+For instance, I've used a combination of these techniques to control multiple Arduino's from a web server on a Raspberry Pi to create a control room for an escape room.
+This has allowed me to create an escape room that requires virtually no input during the room's playtime, whilst giving us better insight in to what user have or havent done.
 
-Explain that we will not be making an end-all chat application, but a rather quick tour through some of the possibilities, for re-use. Entice readers to improvise and improve/expand.
+This tutorial will rely heavily on [NodeJS](https://nodejs.org) and it's package manager NPM.
+For the back-end we're going to use [Express](https://expressjs.com/) & [Socket.io](https://socket.io/) and for the front-end we'll be using [angular](https://angular.io/).
 
-http://cssreference.io/
-http://codepen.io/
+So you might want to read up a little on those before we get started.
 
-~~Explain other uses; e.g. I've used the websockets to create a control interface for an escape room.~~
 
 ## 1.0 Getting started with a simple chat application
 First make sure you have [NodeJS](https://nodejs.org) installed, in most cases it's best to download the LTS version (long term support).
@@ -511,7 +510,23 @@ body {
 ### 2.2 Creating the messages view
 
 Next we're going to create a component to view the chat messages. We'll do so by running `ng g component messages-view` (wherein g is short for generate).
-This will now have generated a folder named `messages-view` in which the basics of our message-view component have been scaffolded for us. The newly generated component will have a selector of `app-messages-view`. We'll add that as a custom element to our `app.component.html`. If all went well the browser will now show "messages-view works!"
+This will now have generated a folder named `messages-view` in which the basics of our message-view component have been scaffolded for us. The newly generated component will have a selector of `app-messages-view`. We'll add that as a custom element to our `app.component.html`. We'll also include a wrapping element with a class.
+``` html
+<div class="app-message-container">
+  <app-message-view></app-message-view>
+</div>
+```
+If all went well the browser will now show "messages-view works!"
+Quickly give our `app.component.scss` some styles and continue on.
+
+``` scss
+.app-message-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+```
+
 
 #### 2.2.1 Programming
 
@@ -531,7 +546,7 @@ private messages = new Array<Object>();
 Next we'll need some means of setting and getting the messages, we'll do this with something similar to getters and setters in other languages (though JavaScript is not as strict still). We'll add these functions bellow our constructor and bellow the `ngOnInit` (or similar if the class implements an other variant).
 
 ``` javascript
-addMessage(message: Object) {
+addMessage(message: Object): void {
   this.messages.push(message);
 }
 ```
@@ -638,6 +653,12 @@ That's more like it!
 
 Now apply some styling from our `message-view.component.scss`. If you'd just like to continue, here's what I've used:
 ``` scss
+:host {
+  flex-grow: 0;
+  height: 100%;
+  overflow: auto;
+}
+
 .message-list {
   display: flex;
   list-style: none;
@@ -661,6 +682,7 @@ Now apply some styling from our `message-view.component.scss`. If you'd just lik
   }
   &__author {
     font-weight: bold;
+    margin-right: 0.5rem;
   }
   &__content {
   }
@@ -743,7 +765,7 @@ Now we'll hook it up to our message-view component.
 Import the ChatService, and remove this SystemMessage import, since we won't be using that anymore. We'll be injecting the chatService in to our constructor and subscribe to the messages. Next every time a message comes in we'll add it to the array in our messages-view component.
 
 ``` javascript
-constructor(private chatService: ChatService) {
+constructor(private chatService: ChatService): void {
   (chatService.messages).subscribe(
     message => {
       this.messages.push(message);
@@ -755,24 +777,148 @@ ngOnInit() {
 }
 ```
 
+If you'd like you can now try to send messages from our part one and they'll show up in your new angular version, since they share the back-end.
+
 ### 2.4 Posting messages
 
+Create a new component from the terminal, this one we'll name "message-writer" (`ng g component message-writer`). And add it to the `app.component.html`.
+
+``` html
+<div class="app-message-container">
+  <app-message-view></app-message-view>
+  <app-message-writer></app-message-writer>
+</div>
+```
+
+#### 2.4.1 Connecting the service
+
+Open ChatService and add a method that will allow you to send a message.
+
+``` javascript
+sendMessage(messageBody: String): void {
+  this.socket.emit('chat message', messageBody);
+}
+```
+
+Next we'll define in our MessageWriterComponent that we will have a string of message and a string of placeholder. The message we will bind to the HTML we'll create in a bit.
+
+``` javascript
+private message:String = "";
+private placeholder:String = "Type your message..."
+```
+
+We'll also need to use the ChatService and to do so we'll inject it in our controller. Don't forget to import the ChatService.
+
+``` javascript
+constructor(private chatService: ChatService) {
+}
+```
+
+Now we'll add a method to submit the message from the template.
+We'll want to make sure we're not sending empty messages so we'll want to check for the length of the messages. We also don't want to the user to keeps sending the same message over and over by pressing enter repeatedly. So, we'll build in some checks to the method.
+
+``` javascript
+submitMessage(): void {
+  if(this.message.length > 0) {
+    this.chatService.sendMessage(this.message);
+  }
+  this.message = "";
+}
+```
+
+First we've check if the message length is more then 0, if so, we'll send it to the chatService to handle the actual sending. Then we'll reset the message to be empty.
+
+We also might want a way to check if the user can can send it that we could use in the front-end for indication purposes. So let's add a method that does just that.
+
+``` javascript
+canSend(): Boolean {
+  return (this.message.length > 0);
+}
+```
+
+Hmm, didn't we just write that check before? Go back to our submitMessage and change the check to use the canSend method. Now we'll be able to update the check in one place if we ever decide to change our requirements.  
+
+#### 2.4.2 Templating
+
+Open `message-writer.component.html`. And create a div, that contains a form with an attribute of (autocomplete set to off)[https://developer.mozilla.org/docs/Web/Security/Securing_your_site/Turning_off_form_autocompletion]. And add an input with a name of "message" and a button in the form.
+
+``` html
+<div class="message-writer">b
+  <form class="message-writer__form" autocomplete="off">
+    <input name="message" type="text" class="message-writer__message" />
+    <button class="message-writer__submit">Submit</button>
+  </form>
+</div>
+```
+
+But hold, if we'd try to send it now, it'd do a post to the current page which results in a hard refresh. Let's add some angular directives. Let's make sure that the form calls our submitMessage method on submit, by using `(ngSubmit)` and passing our method to it. Next we'll want to make sure that the message in the template gets bound to the message in our `message-writer.component.ts`. We can do this binding it using the [ngModel directive](https://angular.io/api/forms/NgModel).
+
+Next we'll want to add a little class change to our submit button if we can actually use it to send our message. To do so we'll use the [ngClass directive](https://angular.io/api/common/NgClass) and use our `canSend` method to switch the classes.
+
+One final thing we want to do is set some native attributes to the input and button elements. But only of they exist or return a value. So instead of interpolation we'll use binding with square brackets "[]". This will make sure the properties get bound to variables in our components.
+
+``` html
+<div class="message-writer">
+  <form class="message-writer__form" autocomplete="off" (ngSubmit)="submitMessage()">
+    <input name="message" type="text" [(ngModel)]="message" [placeholder]="placeholder" class="message-writer__message" />
+    <button class="message-writer__submit" [disabled]="!canSend()" [ngClass]="{'message-writer__submit--active': canSend()}">Submit</button>
+  </form>
+</div>
+```
+
+You might think what's that exclamation mark down there? It's there on purpose to invert the boolean value that `canSend()` returns. So instead of creating a new method for `isDisabled` or doing a check to see if `canSend() === false`, we simple invert what `canSend` returns. So that the button is only disabled if `canSend` is *not* true.
+
+Now let's submit our message. Oh, wait. It still refreshes the page... How can this be?
+We're using angular directive that should handle this stuff for us. Or are we?
+
+Angular comes with a couple of built-in modules, but not all of those modules are always included in your own code, to keep the size of your files down.
+So to use the [FormsModule](https://angular.io/api/forms/FormsModule) which does in fact do all of that for us. We'll have to add it to our module descriptor in `app.module.ts`.
+
+``` javascript
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { FormsModule }   from '@angular/forms';
+
+import { AppComponent } from './app.component';
+import { MessageViewComponent } from './message-view/message-view.component';
+import { ChatService } from './chat.service';
+import { MessageWriterComponent } from './message-writer/message-writer.component';
+
+@NgModule({
+  declarations: [
+    AppComponent,
+    MessageViewComponent,
+    MessageWriterComponent
+  ],
+  imports: [
+    BrowserModule,
+    FormsModule
+  ],
+  providers: [ChatService],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+```
 
 
+## 3 We're done!
 
+Right now you should have a working chat application that notifies you when an other user enters the chat and allows you to send messages to each other!
 
-### 2.5 Users
+### 3.1 Closing remarks
 
+I hope this tutorial has allow you to gain some insight in to the workings of NodeJS and Angular.
+Whilst this tutorial has only touched the surface on these subjects I hope it has peaked your interest and will serve as an inspiration of all the things you could potentially do with these technologies.
 
+### 3.2 Things you could try to add
 
-## 3 Things you could try to add
-- Adding messages by the current user to the view instantly and showing it's in progress if the connection is slow.
+- In the first part of the tutorial we've made it possible to keep track of the users, similar to how the messages work, you should now be able to show what users are online and allow them to change their name.
+
+- Try to add the messages from the current user to the view instantly and show that it's in progress of sending it to the others if the connection is slow. You could then opt to show the server timestamp or the client side timestamp as we do currently.
+
 - Add indicators to show a user is typing
 
-
-TODO:
-- show list of current users, ask users for name and register uuid
-
+- Add a message length limit and show the user how many characters they have left
 
 
 

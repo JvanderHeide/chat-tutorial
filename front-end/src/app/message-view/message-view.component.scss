@@ -1,3 +1,9 @@
+:host {
+  flex-grow: 0;
+  height: 100%;
+  overflow: auto;
+}
+
 .message-list {
   display: flex;
   list-style: none;
@@ -21,6 +27,7 @@
   }
   &__author {
     font-weight: bold;
+    margin-right: 0.5rem;
   }
   &__content {
   }

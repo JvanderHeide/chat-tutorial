@@ -32,4 +32,8 @@ export class ChatService {
     return this.messageSubject;
   }
 
+  sendMessage(messageBody: String): void {
+    this.socket.emit('chat message', messageBody);
+  }
+
 }

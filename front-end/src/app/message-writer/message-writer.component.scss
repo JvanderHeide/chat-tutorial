@@ -1,0 +1,27 @@
+.message-writer {
+  $spacing: 1rem 0.75rem;
+  background-color: #f8f8f8;
+  border-top: 1px solid #ccc;
+  padding: $spacing;
+  &__form {
+    display: flex;
+  }
+  &__message {
+    border: 1px solid #ccc;
+    font: inherit;
+    margin: 0;
+    padding: $spacing;
+    width: 100%;
+  }
+  &__submit {
+    appearance: none;
+    background-color: #ccc;
+    border: none;
+    font: inherit;
+    padding: 1rem 1.5rem;
+    &--active {
+      background-color: rgb(5, 153, 82);
+      color: white;
+    }
+  }
+}
