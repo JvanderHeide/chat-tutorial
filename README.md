@@ -508,17 +508,87 @@ body {
 
 **💡 Tip: declaring ["box-sizing: border-box;"](https://developer.mozilla.org/docs/Web/CSS/box-sizing) for all elements can make CSS a lot nicer to work with, it'll make sure that paddings are not added to any dimensions but rather subtracted, allowing for much easier styling, give it a try!**
 
-### 2.2 Creating our first component, the messages view
+### 2.2 Creating the messages view
 
 Next we're going to create a component to view the chat messages. We'll do so by running `ng g component messages-view` (wherein g is short for generate).
 This will now have generated a folder named `messages-view` in which the basics of our message-view component have been scaffolded for us. The newly generated component will have a selector of `app-messages-view`. We'll add that as a custom element to our `app.component.html`. If all went well the browser will now show "messages-view works!"
 
+Now we're going to get going on some TypeScript, keep in mind that TypeScript is quite different from the JavaScript you've seen thus far. It's no big deal if you can't grasp it immediately, just take your time. Those who've done programming in other class based and/or typed languages, might be more comfortable, but JavaScript is still it's own cup of tea.
 
+For now we'll want an Array of the messages we'll be displaying, we'll start out with a dummy set to get going.
 
+In our `MessageViewComponent` (`message-view.component.ts`) class we'll add a private data member called messages, which we'll instantiate as an empty Array of objects. In JavaScript however, almost all types of variables are instances of Object, and as such typing would have little to no effect, but we'll handle that later. It's common to declare data members in the beginning of the class (before the constructor).
 
+``` javascript
+messages = new Array<Object>();
+```
 
+Next we'll need some means of setting and getting the messages, we'll do this with something similar to getters and setters in other languages (though JavaScript is not as strict still). We'll add these functions bellow our constructor and bellow the `ngOnInit` (or similar if the class implements an other variant).
 
+``` javascript
+addMessage(message: Object) {
+  this.messages.push(message);
+}
+```
 
+What we have here are is a method to add messages to the messages Array. As you can see the variables in this are typed and as such will only take variables of the provided types. (TypeScript will also enforce this regardless.)
+
+*Sadly TypeScript does not support method overloading*
+
+Now whilst that might seem fine initially, I think that just any regular old object might be a bit too lenient. If only we'd have a way to enforce what our object looks like. Sure we can all agree that a all messages should contain an actual message and maybe a timestamp. Next we could create classes for user messages or system messages, that have different fields.
+
+By running `ng g interface Message` we'll create an interface called Message, interfaces only run on compile time in angular, which means that it's not going to be part of the final code whereas classes will be. Interfaces are specific to TypeScript in this regard, whilst classes come form the latest JavaScript versions. Interfaces are way to make sure we as developers keep track of what we're doing.
+
+An interface will allow us to define what a given class should at least implement. For us that would look like this.
+
+``` javascript
+export interface Message extends Object {
+    message: String;
+    timestamp: Number;
+}
+```
+
+What we've done here is defined that a Message is an extension of an Object and that any Message should at least have a message and a timestamp.
+
+Next we'll create two classes, UserMessage and SystemMessage. Angular CLI can do that for us as well. `ng g class UserMessage SystemMessage` will create both of those for us. Next we'll use edit that too look like this:
+
+``` javascript
+import { Message } from "./message";
+
+export class SystemMessage implements Message {
+  message: String;
+  timestamp: Number;
+
+  constructor(message: String) {
+    this.message = message;
+    this.timestamp = Date.now();
+  }
+
+}
+```
+
+First we'll need to import the Message interface to make sure that our class knows what we're going on about. Next we'll say that our SystemMessage is an implementation of our Message interface. We'll add a constructor to the class (a function that gets called when you instantiate a class), in which we'll pass the message and for now set the timestamp automatically.
+
+We'll do the same for our UserMessage, but we'll add the username in there as well.
+``` javascript
+import { Message } from "./message";
+
+export class UserMessage implements Message {
+  message: String;
+  timestamp: Number;
+  username: String;
+
+  constructor(username: String, message: String) {
+    this.message = message;
+    this.timestamp = Date.now();
+    this.username = username;
+  }
+}
+```
+
+- Add welcome message to list + chang array obj to Message, "make sure we have at least those, take care of optional username in template"
+- Do templating
+- add pipes
 
 
 
@@ -529,7 +599,8 @@ Angular CLI
 - socket services
 - styles
 - further expansions
-
+- explain pipes
+- Later sort by timestamp (syncing explanation)
 https://angular.io/api/animations/stagger
 
 TODO:
