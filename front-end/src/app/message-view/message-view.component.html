@@ -1,3 +1,7 @@
-<p>
-  message-view works!
-</p>
+<ol class="message-list">
+  <li class="message" *ngFor="let message of messages;" [ngClass]="{'message--system': (message.constructor.name === 'SystemMessage')}">
+    <span *ngIf="message.username" class="message__author">{{message.username}}</span>
+    <time class="message__timestamp">{{message.timestamp | date:'mediumTime'}}</time>
+    <span class="message__content">{{message.message}}</span>
+  </li>
+</ol>

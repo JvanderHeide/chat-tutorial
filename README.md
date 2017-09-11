@@ -513,7 +513,12 @@ body {
 Next we're going to create a component to view the chat messages. We'll do so by running `ng g component messages-view` (wherein g is short for generate).
 This will now have generated a folder named `messages-view` in which the basics of our message-view component have been scaffolded for us. The newly generated component will have a selector of `app-messages-view`. We'll add that as a custom element to our `app.component.html`. If all went well the browser will now show "messages-view works!"
 
+#### 2.2.1 Programming
+
 Now we're going to get going on some TypeScript, keep in mind that TypeScript is quite different from the JavaScript you've seen thus far. It's no big deal if you can't grasp it immediately, just take your time. Those who've done programming in other class based and/or typed languages, might be more comfortable, but JavaScript is still it's own cup of tea.
+
+Somethings you might notice are `import`s and an `@Component` annotation.
+The former tells the component class what we're importing and makes the variables available to the scope of the specific TypeScript file. The latter is an annotation, which contains information that angular will pickup to do some binding and linking.
 
 For now we'll want an Array of the messages we'll be displaying, we'll start out with a dummy set to get going.
 
@@ -550,7 +555,7 @@ export interface Message extends Object {
 
 What we've done here is defined that a Message is an extension of an Object and that any Message should at least have a message and a timestamp.
 
-Next we'll create two classes, UserMessage and SystemMessage. Angular CLI can do that for us as well. `ng g class UserMessage SystemMessage` will create both of those for us. Next we'll use edit that too look like this:
+Next we'll create two [classes](https://angular.io/api/core/Class), UserMessage and SystemMessage. Angular CLI can do that for us as well. `ng g class UserMessage SystemMessage` will create both of those for us. Next we'll use edit that too look like this:
 
 ``` javascript
 import { Message } from "./message";
@@ -586,11 +591,79 @@ export class UserMessage implements Message {
 }
 ```
 
-- Add welcome message to list + chang array obj to Message, "make sure we have at least those, take care of optional username in template"
-- Do templating
-- add pipes
+Now we know what our messages will look like, we'll head back to our `message-view.component.ts` file. We'll import the `Message` interface.
+``` javascript
+import { Message } from "../message";
+```
+So that our message-view component class will know what it is, and we'll change the reference to Object to Message, so that our Array will only take Message(s) and our addMessage method will do the same. One other thing we'll do for now is import the `SystemMessage` class and add an initial message to our `ngOnInit()` which get's called on initialization of the component.
 
+``` javascript
+ngOnInit() {
+  this.addMessage(new SystemMessage("Welcome to the chat"));
+}
+```
 
+#### 2.2.2 templating
+
+Angular comes with its own (templating engine)[https://angular.io/guide/template-syntax], which will allow for a lot of things that come built-in but also allow us to extends it with custom [directives](https://angular.io/api/core/Directive) or [pipes](https://angular.io/api/core/Pipe). For now however we'll use the built-ins.
+
+We'll start with an ordered list containing messages on which we'll do a [for loop](https://angular.io/api/common/NgFor), where we'll loop over all the messages and for the iteration of the loop assign them to `message`.
+
+Next we're going to give system messages a separate CSS class by using a (ternary operator)[https://developer.mozilla.org/docs/Web/JavaScript/Reference/Operators/Conditional_Operator] in an [ngClass directive](https://angular.io/api/common/NgClass), to check if the [constructor](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Classes/constructor) of the message is 'SystemMessage'.
+
+As we know our messages may or may not have an username, by default if the username is not defined, it won't show in angular, the containing element will still render however. For our use case this is something which we don't want.
+To manage this we'll use the [ngIf directive](https://angular.io/api/common/NgIf) which will only render the element if the passed condition resolves to a (truthy)[https://developer.mozilla.org/docs/Glossary/Truthy] value.
+
+Next we'll use the angular's interpolation (`{{ ... }}`) to show the values of our message in the template.
+
+``` html
+<ol class="message-list">
+  <li class="message" *ngFor="let message of messages;" [ngClass]="{'message--system': (message.constructor.name === 'SystemMessage')}">
+    <span *ngIf="message.username" class="message__author">{{message.username}}</span>
+    <time class="message__timestamp">{{message.timestamp}}</time>
+    <span class="message__content">{{message.message}}</span>
+  </li>
+</ol>
+```
+
+If you now look at the component after it's rendered, you'll see a list with a single welcome message. One thing you might notice is that the timestamp isn't quite human readable. Luckily angular comes with a (builtin pipe)[https://angular.io/api/core/Pipe], that will allow us to convert this value on the fly on the template side. To convert our timestamp to a readable date we'll use the (Date pipe)[https://angular.io/api/common/DatePipe].
+
+``` html
+<time class="message__timestamp">{{message.timestamp | date:'mediumTime'}}</time>
+```
+
+That's more like it!
+
+Now apply some styling from our `message-view.component.scss`. If you'd just like to continue, here's what I've used:
+``` scss
+.message-list {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex-direction: column;
+}
+
+.message {
+  display: flex;
+  flex-flow: wrap;
+  width: 100%;
+  padding: 1rem 0.75rem;
+  &--system {
+    background-color: #f8f8f8;
+    color: #ccc;
+  }
+  &__timestamp {
+    color: #ccc;
+    margin-right: 0.5rem;
+  }
+  &__author {
+    font-weight: bold;
+  }
+  &__content {
+  }
+}
+```
 
 
 
