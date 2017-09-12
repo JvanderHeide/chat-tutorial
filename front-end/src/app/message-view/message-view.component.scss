@@ -12,6 +12,34 @@
   flex-direction: column;
 }
 
+@keyframes message-in {
+  0% {
+    transform: scale(0.75) translateY(2rem);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1) translateY(0rem);
+  }
+  100% {
+    transform: scale(1) translateY(0rem);
+    opacity: 1;
+  }
+}
+
+@keyframes timestamp-in {
+  from {
+    transform: translateX(-2rem);
+    opacity: 0;
+  }
+}
+
+@keyframes timestamp-in-self {
+  from {
+    transform: translateX(2rem);
+    opacity: 0;
+  }
+}
+
 .message {
   display: flex;
   flex-flow: wrap;
@@ -22,7 +50,7 @@
   margin: 1rem auto 1rem 0.75rem;
   position: relative;
   max-width: 50%;
-
+  animation: message-in .5s;
   &--system {
     // background-color: rgba(#000, 0.025);
     color: rgba(#000, 0.25);
@@ -46,6 +74,7 @@
     margin-left: auto;
     left: auto;
     right: 0;
+    animation: timestamp-in-self .5s .2s both;
   }
   &--system &__timestamp {
     position: static;
@@ -63,6 +92,7 @@
     position: absolute;
     top: -1.25rem;
     left: 0;
+    animation: timestamp-in .5s .2s both;
   }
   &__author {
     font-weight: bold;
