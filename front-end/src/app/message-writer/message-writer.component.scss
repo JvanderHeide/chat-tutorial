@@ -1,8 +1,8 @@
 .message-writer {
   $spacing: 1rem 0.75rem;
-  background-color: #f8f8f8;
-  border-top: 1px solid #ccc;
-  padding: $spacing;
+  // background-color: #f8f8f8;
+  // border-top: 1px solid #ccc;
+  // padding: $spacing;
   &__form {
     display: flex;
   }
@@ -12,13 +12,14 @@
     margin: 0;
     padding: $spacing;
     width: 100%;
-    border-radius: 0.5rem 0 0 0.5rem;
+    // border-radius: 0.5rem 0 0 0.5rem;
+    outline: none;
   }
   &__submit {
     appearance: none;
     background-color: #ccc;
     border: none;
-    border-radius: 0 0.5rem 0.5rem 0;
+    // border-radius: 0 0.5rem 0.5rem 0;
     font: inherit;
     padding: 1rem 1.5rem;
     transition: all .3s;
