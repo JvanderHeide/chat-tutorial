@@ -919,3 +919,5 @@ Whilst this tutorial has only touched the surface on these subjects I hope it ha
 - Add indicators to show a user is typing
 
 - Add a message length limit and show the user how many characters they have left
+
+For an example to a look at: https://github.com/JvanderHeide/chat-tutorial/tree/feature/improvements
